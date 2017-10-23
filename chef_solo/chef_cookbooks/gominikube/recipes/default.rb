@@ -43,15 +43,6 @@ remote_file '/usr/local/bin/kubectl' do
   not_if 'ls /usr/local/bin/kubectl'
 end
 
-# Kubectl installation
-node.default['ver_kubectl']=`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`.strip
-remote_file '/usr/local/bin/kubectl' do
-  source "http://storage.googleapis.com/kubernetes-release/release/#{node['ver_kubectl']}/bin/linux/amd64/kubectl"
-  mode '0755'
-  action :create
-  not_if 'ls /usr/local/bin/kubectl'
-end
-
 # Docker-machine installation
 node.default['os_ver']=`uname -s`.strip
 node.default['os_arch']=`uname -m`.strip
@@ -85,4 +76,8 @@ end
 
 execute 'Check installation helm' do
   command 'ls /usr/local/bin/helm'
+end
+
+service 'libvirtd' do
+   action [ :enable, :start ]
 end

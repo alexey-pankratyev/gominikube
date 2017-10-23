@@ -1,2 +1,4 @@
 chef_solo/local-mode-cache
 chef_solo/nodes
+chef_solo/minikube_create.json
+chef_solo/minikube_destroy.json
