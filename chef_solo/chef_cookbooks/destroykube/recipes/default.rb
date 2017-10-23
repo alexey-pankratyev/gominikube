@@ -78,6 +78,6 @@ end
 
 # Kill remaining process qemu
 execute 'Kill process qemu' do
-  command 'kill $(pidof qemu)'
-  only_if 'pidof qemu'
+  command 'kill $(pgrep qemu)'
+  only_if 'pgrep qemu'
 end
