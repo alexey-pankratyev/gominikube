@@ -32,7 +32,7 @@ helm_init:
 	@#@
 	@#@ ----------------- OPERATING DESTRUCTION -----------------
 
-destroy:
+destroy: delete_vm
 	@#@ Start removing the hypervisor, kubectl, minikube, helm
 	echo "{\"run_list\":[\"recipe[destroykube]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_destroy.json
@@ -52,7 +52,7 @@ start_vm: start_minikube
 	@#@ Start virtual minikube  machine
 	minikube start
 
-delete_vm: delete_minikube
+delete_vm: 
 	@#@ Delete virtual minikube  machine
 	minikube delete
 
