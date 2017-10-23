@@ -47,7 +47,7 @@ end
 node.default['os_ver']=`uname -s`.strip
 node.default['os_arch']=`uname -m`.strip
 remote_file '/usr/local/bin/docker-machine-driver-kvm' do
-  source "https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-#{node['os_ver']}-#{node['os_arch']}"
+  source "https://github.com/docker/machine/releases/download/v0.8.2/docker-machine-#{node['os_ver']}-#{node['os_arch']}"
   mode '0755'
   action :create
   not_if 'ls /usr/local/bin/docker-machine-driver-kvm'

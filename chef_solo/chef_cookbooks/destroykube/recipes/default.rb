@@ -9,7 +9,9 @@ package "libvirt" do
   case node[:platform]
   when "centos", "redhat", "fedora"
     package_name "libvirt-daemon-kvm"
+    package_name "libvirt"
   when 'ubuntu', 'debian'
+    package_name "libvirt"
     package_name "libvirt-bin"
   end
   action :remove
@@ -72,4 +74,10 @@ end
 remote_file '/usr/local/bin/helm' do
   action :delete
   only_if { File.exist?('/usr/local/bin/helm') }
+end
+
+# Kill remaining process qemu
+execute 'Kill process qemu' do
+  command 'kill $(pidof qemu)'
+  only_if 'pidof qemu'
 end

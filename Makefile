@@ -9,11 +9,11 @@ deploy: install_chef create run_minikube use_context helm_init
 
 install_chef:
 	@#@ Install chef
-	sudo curl -L https://www.opscode.com/chef/install.sh | bash
+	sudo curl -L https://www.opscode.com/chef/install.sh | sudo bash
 
 create:
 	@#@ Run the hypervisor,  kubectl, minikube, helm installation
-	cho "{\"run_list\":[\"recipe[gominikube]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
+	echo "{\"run_list\":[\"recipe[gominikube]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_create.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_create.json
 
 run_minikube:
