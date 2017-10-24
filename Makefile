@@ -1,8 +1,8 @@
 # Enter what type of hypiphyper you want to use ( virtualbox or kvm )
 hypervisor = virtualbox
 
-.PHONY: deploy install_chef run_minikube create_libvirt create_vbox destroy_libvirt \
-	      destroy_vbox run stop_vm start_vm delete_vm  use_context helm_init
+.PHONY: deploy install_chef run_minikube create_libvirt create_vbox destroy \
+	      destroy_libvirt destroy_vbox run stop_vm start_vm delete_vm  use_context helm_init
 
 
 	@#@
@@ -47,15 +47,20 @@ helm_init:
 	@#@
 	@#@ ----------------- OPERATING DESTRUCTION -----------------
 
+destroy:
+	@#@ Destroy the hypervisor,  kubectl, minikube, helm installation
+	if [ $(hypervisor) == "virtualbox" ]  ;	then $(MAKE) destroy_vbox ; fi
+	if [ $(hypervisor) == "kvm" ]  ;	then $(MAKE) destroy_libvirt ; fi
+
 destroy_libvirt:
 	@#@ Start removing the libvirt, kubectl, minikube, helm
-	minikube delete | true
+	minikube delete || echo "continue"
 	echo "{\"run_list\":[\"recipe[destroykube::default], recipe[destroykube::destroylibvirt]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_destroy.json
 
 destroy_vbox:
 	@#@ Start removing the virtualbox, kubectl, minikube, helm
-	minikube delete | true
+	minikube delete || echo "continue"
 	echo "{\"run_list\":[\"recipe[destroykube::default]\", \"recipe[virtualbox::destroyvbox]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_destroy.json
 
