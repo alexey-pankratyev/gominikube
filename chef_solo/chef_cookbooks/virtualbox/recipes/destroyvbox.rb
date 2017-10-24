@@ -52,7 +52,7 @@ when 'rhel', 'fedora'
     action :remove
   end
 
-  yum_repository "VirtualBox-#{node['virtualbox']['version']}" do
+  package "VirtualBox-#{node['virtualbox']['version']}" do
     action :remove
   end
 
