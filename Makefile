@@ -1,4 +1,8 @@
-.PHONY: deploy install_chef run_minikube create destroy run stop_vm start_vm delete_vm  use_context helm_init
+# Enter what type of hypiphyper you want to use ( virtualbox or kvm )
+hypervisor = virtualbox
+
+.PHONY: deploy install_chef run_minikube create_libvirt create_vbox destroy_libvirt \
+	      destroy_vbox run stop_vm start_vm delete_vm  use_context helm_init
 
 
 	@#@
@@ -13,12 +17,23 @@ install_chef:
 
 create:
 	@#@ Run the hypervisor,  kubectl, minikube, helm installation
-	echo "{\"run_list\":[\"recipe[gominikube]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_create.json
+	if [ $(hypervisor) == "virtualbox" ]  ;	then $(MAKE) create_vbox ; fi
+	if [ $(hypervisor) == "kvm" ]  ;	then $(MAKE) create_libvirt ; fi
+
+create_libvirt:
+	@#@ Run the libvirt,  kubectl, minikube, helm installation
+	echo "{\"run_list\":[\"recipe[gominikube::create_libvirt]\", \"recipe[gominikube::default]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_create.json
+	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_create.json
+
+create_vbox:
+	@#@ Run the virtualbox,  kubectl, minikube, helm installation
+	echo "{\"run_list\":[\"recipe[virtualbox::default]\",\"recipe[gominikube::default]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_create.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_create.json
 
 run_minikube:
 	@#@ Run minikube
-	minikube start --vm-driver kvm
+	if [ $(hypervisor) == "virtualbox" ]  ;	then minikube start ; fi
+	if [ $(hypervisor) == "kvm" ]  ;	then minikube start --vm-driver $(hypervisor) ; fi
 
 use_context:
 	@#@ Set context minikube
@@ -32,9 +47,16 @@ helm_init:
 	@#@
 	@#@ ----------------- OPERATING DESTRUCTION -----------------
 
-destroy: delete_vm
-	@#@ Start removing the hypervisor, kubectl, minikube, helm
-	echo "{\"run_list\":[\"recipe[destroykube]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
+destroy_libvirt:
+	@#@ Start removing the libvirt, kubectl, minikube, helm
+	minikube delete | true
+	echo "{\"run_list\":[\"recipe[destroykube::default], recipe[destroykube::destroylibvirt]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
+	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_destroy.json
+
+destroy_vbox:
+	@#@ Start removing the virtualbox, kubectl, minikube, helm
+	minikube delete | true
+	echo "{\"run_list\":[\"recipe[destroykube::default]\", \"recipe[virtualbox::destroyvbox]\"],\"user_dir\":\"$(HOME)\/.minikube\"}" > $(shell pwd)/chef_solo/minikube_destroy.json
 	sudo chef-solo -c $(shell pwd)/chef_solo/solo.rb -j $(shell pwd)/chef_solo/minikube_destroy.json
 
 
@@ -52,11 +74,13 @@ start_vm: start_minikube
 	@#@ Start virtual minikube  machine
 	minikube start
 
-delete_vm: 
+delete_vm:
 	@#@ Delete virtual minikube  machine
 	minikube delete
 
 help:
+	$(info What type of hyprovisor do you want to install? \
+	       Enter the top in the variable of "hypervisor" - ( virtualbox or kvm ))
 	@grep -P "\t@#@" $(CURDIR)/Makefile -B 2 | \
 	grep -P "^([\w$$]+|\t)" | \
 	awk '{if ($$1 ~ /^@?#/) {$$1="\t\t";print;} else print "\033[1;37m" $$1 "\033[0m "}'
