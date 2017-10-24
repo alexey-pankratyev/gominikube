@@ -61,7 +61,7 @@ destroy_vbox:
 
 
 	@#@
-	@#@ ----------------- OPERATING WITH VIRTUAL MACHINES -----------------
+	@#@ ---------------- OPERATING WITH VIRTUAL MACHINES ----------------
 
 run: run_minikube use_context helm_init
 	@#@ Launching minikube, context definition and helmet installation
